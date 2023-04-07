@@ -1,20 +1,5 @@
 #include "./libs/BokettoLib.HH"
-#define MY_HASH_TABLE_SIZE 256
-
-// -- HashTables
-class CMyClass:CHash {
-  U0 (*f)(U8 **, I64);
-};
-
-CHashTable *my_hash_table=HashTableNew(MY_HASH_TABLE_SIZE);
-
-U0 Register(CMyClass *h,U8 *str, I64 type,U0 (*f)()){
-    h->str=StrNew(str);
-    h->type=type;
-    h->f=f;
-    HashAdd(h,my_hash_table);
-
-}
+#define CMDS_LEN 3 // <- Manually update
 
 // Just a wrapper for CD to change outputs.
 U0 CMDCd(U8 **params, I64 cnt){
@@ -94,7 +79,7 @@ U0 Ls(U8 **params, I64 cnt){
       c=Bsr(c)/4+1;
 
       while (tmpde1) {
-	      tmpde2=tmpde1->next;
+	      tmpde2=tmpde1->next;
 	      if (tmpde1->attr & RS_ATTR_DIR){
           if (!StartsWith(tmpde1->name, ".")){
             PutLsLink(tmpde1->name,tmpde1->full_name);
@@ -118,7 +103,16 @@ U0 Ls(U8 **params, I64 cnt){
   if (changed) Free(directory);
 }
 
-CMyClass cd, pwd, ls;
-Register(&cd, "cd",HTT_FUN,&CMDCd);
-Register(&pwd, "pwd",HTT_FUN,&Pwd);
-Register(&ls, "ls",HTT_FUN,&Ls);
+
+// Command Registration
+
+class command {
+  U8* name;
+  I64 (*func)(U8**, I64);
+};
+
+static command cmds[CMDS_LEN] = {
+  {"cd", &CMDCd},
+  {"pwd", &Pwd},
+  {"ls", &Ls}
+};

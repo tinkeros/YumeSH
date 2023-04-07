@@ -41,46 +41,42 @@ U8 *Prompt(){
 } 
 
 U0 YumeSH(){
-    U16 count = 0;
-    U8 *input;
-    U8 **str_arr, **params;
-    I64 word_cnt;
+    I64 count = 0, word_cnt, i;
+    U8 *input, **str_arr;
     
     PatchFont;
+
     while (1){
         if (count == 0) YOnce;
-
+        
         "%s", Prompt;
-        input = GetStr("");
+        input = GetStr();
         count++;
-
-        if (!StrCmp(input, "quit")) {
-            Free(str_arr);
-            Free(input);
-            break;
-
-        }
-        else{
+        str_arr=StrSplit(input,&word_cnt);
+        
+        while (i < CMDS_LEN) {
             str_arr=StrSplit(input,&word_cnt);
-            if (word_cnt != 0){
-                CMyClass *tmph;
-                tmph=HashFind(str_arr[0],my_hash_table,HTT_FUN);
-                params = &str_arr[1];
-                
-                if (tmph) {
-                    tmph->f(params, word_cnt);
-                }
-                else{
-                    "$FG,4$ERR:$FG,0$ command '%s' not recognized.\n$FD$", str_arr[0];
-                }
+            command* cmd = &cmds[i];
 
+            if (!StrCmp(str_arr[0], cmd->name)) {
+                I64 ret = cmd->func(str_arr, word_cnt);
+
+                switch (ret) {
+                case -1:
+                    Free(input);
+                    Free(str_arr);
+                    return;
+                default:
+                    break;
+                }
+            } else{
+                
             }
-            
-            
+
+            i++;
         }
-        Free(str_arr);
-        Free(input);
     }
 
 }
+
 YumeSH;
