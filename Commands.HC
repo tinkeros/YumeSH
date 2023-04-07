@@ -1,10 +1,9 @@
 #include "./libs/BokettoLib.HH"
-#define CMDS_LEN 3 // <- Manually update
 
 // Just a wrapper for CD to change outputs.
 U0 CMDCd(U8 **params, I64 cnt){
   if (cnt>1){
-    U8 *path = RevDirSub(params[0]);
+    U8 *path = RevDirSub(params[1]);
     // FileFind doesn't work if the directory is just *:/ 
     // so it must be a full path, so we just skip it and go through.
     if (!StrCmp(path, "/") || !StrCmp(path, "/Home")){
@@ -32,6 +31,10 @@ U0 Pwd(){
 U0 PutLsLink(U8 *dirname,U8 *full_name=NULL){
   U8 *st;
   if (!dirname) return;
+  // TODO, __IsCmdLine is not defined, not sure
+  // what your plan for it is, but I made if FALSE
+  // just so the code runs.
+  Bool __IsCmdLine=FALSE;
   if (__IsCmdLine)
     "%s",dirname;
   else {
@@ -47,11 +50,11 @@ U0 PutLsLink(U8 *dirname,U8 *full_name=NULL){
 // Copied from Dir. Refactored & Improved.  
 U0 Ls(U8 **params, I64 cnt){
   CDirEntry *tmpde1=NULL,*tmpde2;
-  U8 *st, *directory="";
+  U8 *st=NULL, *directory="";
   Bool changed = FALSE;
   I64 csize=0xFFFF,c=0xFFFF;
   if (cnt>1){
-    directory = params[0];
+    directory = params[1];
     changed = TRUE;
   } 
 
@@ -98,21 +101,10 @@ U0 Ls(U8 **params, I64 cnt){
       }
     } else
       "No matching entries\n";
-    Free(st);
+    if (st) Free(st);
   }
-  if (changed) Free(directory);
 }
 
 
-// Command Registration
 
-class command {
-  U8* name;
-  I64 (*func)(U8**, I64);
-};
 
-static command cmds[CMDS_LEN] = {
-  {"cd", &CMDCd},
-  {"pwd", &Pwd},
-  {"ls", &Ls}
-};
